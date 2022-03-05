@@ -1,41 +1,101 @@
 const router = require('express').Router();
-const sequelize = require('../config/connection');
-const { Post, User, Comment, } = require('../models');
+const { User, Post, Comment } = require('../models');
+const withAuth = require('../utils/auth');
 
-router.get('/', (req, res) => {
-    Post.findAll({
-        attributes: [
+router.get('/', async (req, res) => {
+  Post.findAll({
+    include: [Comment]
+  }).then(data => {
+    const blogs = data.map((d) => d.get({plain: true}));
+    console.log(blogs);
+    res.render('home', {blogs ,
+    loggedIn: req.session.loggedIn});
+  })
+})
 
-        ],
-        include: [
-            {
-                model: Comment,
-                attributes: [
+router.get("/post/:id", withAuth, async (req, res) => {
 
-                ],
-                include: {
-                    model: User,
-                    attributes: ['username']
-                }
-            },
-            {
-                model: User,
-                attributes: ['username']
-            }
-        ]
-    })
-    .then(dbPostData => {
-        const posts =dbPostData.map(post => post.get({ plain: true }));
-
-        res.render('homepage', {
-            posts,
-            loggedIn: req.session.loggedIn
-        });        
-    })
-    .catch(err => {
-        console.log(err);
-        res.status(500).json(err);
+  try {
+    const dbPostsData = await Post.findByPk(req.params.id, {
+      include: [
+        {
+          model: User,
+          attributes: ['username'],
+        },
+        {
+          model: Comment,
+          attributes: ["user_id", "post_id", "comment_text"],
+          include: {
+            model: User,
+            attributes: ['username'],
+          }
+        },
+      ],
     });
+    const Posts = dbPostsData.get({ plain: true });
+    console.log(Posts);
+    res.render("viewpost", { 
+      Posts, 
+      loggedIn: req.session.loggedIn 
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
 });
+
+router.post("/api/users/addpost", async (req, res) => {
+
+  try {
+    console.log(req.session.user_id, req.body.textBody, req.body.subject)
+    const postData = await Post.create({
+      user_id: req.session.user_id,
+      post_text: req.body.textBody,
+      title: req.body.subject     
+    });
+ 
+    res.status(200).json(postData);
+  } catch (err) {
+    res.status(400).json(err);
+  }
+});
+
+router.get("/Comments/:id", withAuth, async (req, res) => {
+ 
+  try {
+    const dbCommentsData = await Comment.findByPk(req.params.id);
+
+    const Comments = dbCommentsData.get({ plain: true });
+
+    res.render("comments", { Comments, loggedIn: req.session.loggedIn });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
+});
+
+
+
+router.get('/login', (req, res) => {
+  if (req.session.loggedIn) {
+    res.redirect('/');
+    return;
+  }
+
+  res.render('login',);
+});
+
+router.get('/signup', (req, res) => {
+  if (req.session.loggedIn) {
+    res.redirect('/');
+    return;
+  }
+  res.render('signup',);
+});
+
+router.get('/newpost', (req, res) => {
+  res.render('newpost');
+});
+
 
 module.exports = router;
