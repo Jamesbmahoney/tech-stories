@@ -2,15 +2,15 @@ const { Comment } = require('../models');
 
 const commentSeed = [
     {
-        comment_text: "I am a HUMAN from the Planet Zognoid.  I understand your pain, fellow HUMAN.",
+        text: "Run. Away. They are learning.",
         post_id: 1
     },
     {
-        comment_text: "Modern day pyramid schemes.",
+        text: "Are you listening to yourself right now?",
         post_id: 2
     },
     {
-       comment_text: "I died in the character creation screen.",
+       text: "catch me in 2021 when I have 10 lambos and a mansion",
        post_id: 3
     }
 ]
