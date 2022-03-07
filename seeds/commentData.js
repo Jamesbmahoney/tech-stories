@@ -2,7 +2,7 @@ const { Comment } = require('../models');
 
 const commentSeed = [
     {
-        text: "Run. Away. They are learning.",
+        text: "I died at the character creation screen",
         post_id: 1
     },
     {
@@ -10,7 +10,7 @@ const commentSeed = [
         post_id: 2
     },
     {
-       text: "catch me in 2021 when I have 10 lambos and a mansion",
+       text: "Lookin good dude!",
        post_id: 3
     }
 ]
